@@ -3,66 +3,66 @@ version: '3.8'
 services:
 
 
-    services:
-      app:
-        image: php:8.4-fpm
-        container_name: laravel_app
-        working_dir: /var/www/html
-        volumes:
-          - ./:/var/www/html
-        depends_on:
-          - db
-        networks:
-          - traefik_net
-          - rede_microservicos
+  services:
+    app:
+      image: php:8.4-fpm
+      container_name: laravel_app
+      working_dir: /var/www/html
+      volumes:
+        - ./:/var/www/html
+      depends_on:
+        - db
+      networks:
+        - traefik_net
+        - rede_microservicos
 
-      web:
-        image: nginx:stable-alpine
-        container_name: laravel_web
-        ports:
-          - "8083:80"
-        volumes:
-          - ./:/var/www/html:ro
-          - ./nginx:/etc/nginx/conf.d:ro
-        depends_on:
-          - app
-        networks:
-          - traefik_net
-          - rede_microservicos
+    web:
+      image: nginx:stable-alpine
+      container_name: laravel_web
+      ports:
+        - "8083:80"
+      volumes:
+        - ./:/var/www/html:ro
+        - ./nginx:/etc/nginx/conf.d:ro
+      depends_on:
+        - app
+      networks:
+        - traefik_net
+        - rede_microservicos
 
-      db:
-        image: mysql:8.0
-        container_name: laravel_db
-        environment:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: laravel
-          MYSQL_USER: laravel
-          MYSQL_PASSWORD: secret
-        volumes:
-          - dbdata:/var/lib/mysql
-        networks:
-          - traefik_net
-          - rede_microservicos
+    db:
+      image: mysql:8.0
+      container_name: laravel_db
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: laravel
+        MYSQL_USER: laravel
+        MYSQL_PASSWORD: secret
+      volumes:
+        - dbdata:/var/lib/mysql
+      networks:
+        - traefik_net
+        - rede_microservicos
 
-      phpmyadmin:
-        image: phpmyadmin:5.1
-        environment:
-          PMA_HOST: db
-          PMA_USER: root
-          PMA_PASSWORD: root
-        ports:
-          - "8084:80"
-        depends_on:
-          - db
-        networks:
-          - traefik_net
-          - rede_microservicos
+    phpmyadmin:
+      image: phpmyadmin:5.1
+      environment:
+        PMA_HOST: db
+        PMA_USER: root
+        PMA_PASSWORD: root
+      ports:
+        - "8084:80"
+      depends_on:
+        - db
+      networks:
+        - traefik_net
+        - rede_microservicos
 
-    volumes:
-      dbdata:
+  volumes:
+    dbdata:
 
-    networks:
-      rede_microservicos:
-        external: true
-      traefik_net:
-        external: false
+  networks:
+    rede_microservicos:
+      external: true
+    traefik_net:
+      external: false
