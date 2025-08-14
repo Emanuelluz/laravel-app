@@ -24,7 +24,7 @@ services:
       WEB_DOCUMENT_INDEX: index.php
       APP_ENV: production
       APP_DEBUG: 'false'
-      APP_URL: http://localhost:8085
+      APP_URL: http://192.168.0.118:8085
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
@@ -36,6 +36,7 @@ services:
       - ./nginx/laravel.conf:/opt/docker/etc/nginx/vhost.common.d/10-laravel.conf:ro
     ports:
       - "8085:80"
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
@@ -46,6 +47,7 @@ services:
       MYSQL_PASSWORD: secret
     volumes:
       - dbdata:/var/lib/mysql
+  restart: unless-stopped
 
   phpmyadmin:
     image: phpmyadmin:5.1
@@ -57,6 +59,7 @@ services:
       - "8084:80"
     depends_on:
       - db
+  restart: unless-stopped
 
 volumes:
   dbdata:
