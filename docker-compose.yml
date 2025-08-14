@@ -59,7 +59,7 @@ services:
       - "8084:80"
     depends_on:
       - db
-  restart: unless-stopped
+ 
 
 volumes:
   dbdata:
