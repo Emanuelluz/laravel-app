@@ -1,14 +1,26 @@
-
+version: '3.8'
 
 services:
+  # Serviço que prepara o código (Composer e APP_KEY)
+  setup:
+    image: composer:2
+    working_dir: /app
+    command: >-
+      sh -lc "composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+      && [ -f .env ] || cp .env.example .env
+      && php artisan key:generate --force"
+    volumes:
+      - ./:/app
+    restart: "no"
+
+  # App com Nginx + PHP-FPM em um único container (sem build)
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: laravel-app:local
-    container_name: laravel_app
-    working_dir: /var/www/html
+    image: webdevops/php-nginx:8.3
+    depends_on:
+      - setup
+      - db
     environment:
+      WEB_DOCUMENT_ROOT: /app/public
       APP_ENV: production
       APP_DEBUG: 'false'
       APP_URL: http://localhost:8085
@@ -19,31 +31,12 @@ services:
       DB_USERNAME: laravel
       DB_PASSWORD: secret
     volumes:
-      - ./:/var/www/html
-    depends_on:
-      - setup
-      - db
-    networks:
-      - traefik_net
-      - rede_microservicos
-
-  web:
-    image: nginx:stable-alpine
-    container_name: laravel_web
+      - ./:/app
     ports:
       - "8085:80"
-    volumes:
-      - ./:/var/www/html:ro
-      - ./nginx:/etc/nginx/conf.d:ro
-    depends_on:
-      - app
-    networks:
-      - traefik_net
-      - rede_microservicos
 
   db:
     image: mysql:8.0
-    container_name: laravel_db
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel
@@ -51,9 +44,6 @@ services:
       MYSQL_PASSWORD: secret
     volumes:
       - dbdata:/var/lib/mysql
-    networks:
-      - traefik_net
-      - rede_microservicos
 
   phpmyadmin:
     image: phpmyadmin:5.1
@@ -65,35 +55,9 @@ services:
       - "8084:80"
     depends_on:
       - db
-    networks:
-      - traefik_net
-      - rede_microservicos
-
-  setup:
-    image: composer:2
-    container_name: laravel_setup
-    working_dir: /var/www/html
-    command: >-
-      sh -lc "composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
-      && php -r 'file_exists(".env") || copy(".env.example", ".env");'
-      && php artisan key:generate --force
-      "
-    volumes:
-      - ./:/var/www/html
-    networks:
-      - traefik_net
-      - rede_microservicos
-    restart: "no"
 
 volumes:
   dbdata:
-
-networks:
-  rede_microservicos:
-    external: true
-  traefik_net:
-    # criado pelo compose desta stack (não externo)
-    external: false
 
 
 
