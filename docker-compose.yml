@@ -47,7 +47,7 @@ services:
       MYSQL_PASSWORD: secret
     volumes:
       - dbdata:/var/lib/mysql
-  restart: unless-stopped
+    restart: unless-stopped
 
   phpmyadmin:
     image: phpmyadmin:5.1
@@ -59,6 +59,7 @@ services:
       - "8084:80"
     depends_on:
       - db
+    restart: unless-stopped
  
 
 volumes:
