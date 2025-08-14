@@ -2,7 +2,11 @@ version: '3.8'
 
 services:
 
-
+  networks:
+    rede_microservicos:
+      external: true
+    traefik_net:
+      external: false
   services:
     app:
       image: php:8.4-fpm
@@ -61,8 +65,4 @@ services:
   volumes:
     dbdata:
 
-  networks:
-    rede_microservicos:
-      external: true
-    traefik_net:
-      external: false
+
