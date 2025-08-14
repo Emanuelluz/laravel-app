@@ -1,9 +1,7 @@
 version: '3.8'
 
 services:
-  app:
-    image: php:8.4-fpm
-    version: '3.8'
+
 
     services:
       app:
