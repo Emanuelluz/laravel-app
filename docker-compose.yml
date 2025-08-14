@@ -21,7 +21,7 @@ services:
       - db
     environment:
       WEB_DOCUMENT_ROOT: /app/public
-  WEB_DOCUMENT_INDEX: index.php
+      WEB_DOCUMENT_INDEX: index.php
       APP_ENV: production
       APP_DEBUG: 'false'
       APP_URL: http://localhost:8085
@@ -32,8 +32,8 @@ services:
       DB_USERNAME: laravel
       DB_PASSWORD: secret
     volumes:
-  - ./:/app
-  - ./nginx/laravel.conf:/opt/docker/etc/nginx/vhost.common.d/10-laravel.conf:ro
+      - ./:/app
+      - ./nginx/laravel.conf:/opt/docker/etc/nginx/vhost.common.d/10-laravel.conf:ro
     ports:
       - "8085:80"
 
