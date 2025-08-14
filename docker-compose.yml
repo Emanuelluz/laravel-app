@@ -1,43 +1,51 @@
 version: '3.8'
 
 services:
-  # Serviço que prepara o código (Composer e APP_KEY)
-  setup:
-    image: composer:2
-    working_dir: /app
-    command: >-
-      sh -lc "composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
-      && [ -f .env ] || cp .env.example .env
-      && php artisan key:generate --force"
+  # Web server (Nginx)
+  web:
+    image: nginx:alpine
+    ports:
+      - "8085:80"
     volumes:
-      - ./:/app
-    restart: "no"
-
-  # App com Nginx + PHP-FPM em um único container (sem build)
-  app:
-    image: webdevops/php-nginx:8.3
+      - ./:/var/www:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - setup
-      - db
+      - php-fpm
+    restart: unless-stopped
+
+  # PHP-FPM service
+  php-fpm:
+    image: php:8.3-fpm
+    volumes:
+      - ./:/var/www
     environment:
-      WEB_DOCUMENT_ROOT: /app/public
-      WEB_DOCUMENT_INDEX: index.php
-      APP_ENV: production
-      APP_DEBUG: 'false'
-      APP_URL: http://192.168.0.118:8085
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: laravel
       DB_USERNAME: laravel
       DB_PASSWORD: secret
-    volumes:
-      - ./:/app
-      - ./nginx/laravel.conf:/opt/docker/etc/nginx/vhost.common.d/10-laravel.conf:ro
-    ports:
-      - "8085:80"
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_URL: http://192.168.0.118:8085
+    depends_on:
+      - db
+      - setup
     restart: unless-stopped
 
+  # Setup service for Composer and Laravel setup
+  setup:
+    image: composer:2
+    working_dir: /var/www
+    command: >-
+      sh -c "composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+      && [ -f .env ] || cp .env.example .env
+      && php artisan key:generate --force"
+    volumes:
+      - ./:/var/www
+    restart: "no"
+
+  # MySQL database
   db:
     image: mysql:8.0
     environment:
@@ -49,6 +57,7 @@ services:
       - dbdata:/var/lib/mysql
     restart: unless-stopped
 
+  # phpMyAdmin
   phpmyadmin:
     image: phpmyadmin:5.1
     environment:
